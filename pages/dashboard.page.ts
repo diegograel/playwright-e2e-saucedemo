@@ -1,5 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
-import { itemNames } from '../data/inventoryData';
+import { itemNames, itemPrices } from '../data/inventoryData';
 
 export class DashboardPage {
     readonly page: Page;
@@ -7,9 +7,11 @@ export class DashboardPage {
     readonly cartBadge: Locator;
     readonly shoppingCartLink: Locator;
     readonly inventoryItemNames: Locator;
+    readonly inventoryItemPrices: Locator;
     readonly addToCartButton: Locator;
     readonly removeButton: Locator;
     readonly inventoryItem: Locator;
+    readonly sortDropdown: Locator;
 
 
     constructor(page: Page) {
@@ -19,8 +21,10 @@ export class DashboardPage {
         this.cartBadge = page.locator('[data-test="shopping-cart-badge"]');
         this.shoppingCartLink = page.locator('[data-test="shopping-cart-link"]');
         this.inventoryItemNames = page.locator('[data-test="inventory-item-name"]');
+        this.inventoryItemPrices = page.locator('[data-test="inventory-item-price"]');
         this.addToCartButton = page.getByRole('button', { name: 'Add to cart' });
         this.removeButton = page.getByRole('button', { name: 'Remove' });
+        this.sortDropdown = page.locator('[data-test="product-sort-container"]');
     }
 
     async isLoaded(){
@@ -40,11 +44,20 @@ export class DashboardPage {
         return await this.inventoryItemNames.allTextContents();
     }
 
+    async getInventoryItemPrices(): Promise<number[]> {
+        const priceTexts = await this.inventoryItemPrices.allTextContents();
+        return priceTexts.map((price) => parseFloat(price.replace('$', '')));
+    }
+
     async validateAllProductsDisplayed() {
         await expect(this.inventoryItemNames).toHaveText(itemNames);
     }
     
     get cartBadgeLocator() {
         return this.cartBadge;
+    }
+
+    async sortBy(option: string) {
+        await this.sortDropdown.selectOption(option);
     }
 }
